@@ -1,11 +1,19 @@
 # Rural-to-Urban Migrant Worker Mobility Shaped Measles Epidemics in China
 
-This repository contains code and shareable data for the paper:
+This repository contains model code and shareable data for the paper:
 
 > **Rural-to-Urban Migrant Worker Mobility Shaped Measles Epidemics in China**  
 > DOI: https://doi.org/10.1101/2025.06.21.25330021
 
-Because the mobility data are not publicly available without permission, we provide a shareable version in which we add noise to two years of mobility data to support reproducibility. 
+---
+
+## Public reproduction scope
+
+The measles incidence data and the mobility data are subject to restriction.
+- To access incidence data and/or to seek permission for its use, please contact the Data-center of China Public Health Science: https://www.phsciencedata.cn/Share/
+- To access mobility data and/or to seek permission for its use, please contact the Ethics Committee of the School of Journalism and Communication, Beijing Normal University: wuye@bnu.edu.cn
+
+To support a public reproduction workflow, this repository provides model code and shareable data, including a noise-added 2005–2006 traveler mobility dataset. The default model configuration is set up to run the 2005–2006 analysis rather than the full 2005–2014 analysis, which relies on restricted data.
 
 ---
 
@@ -13,73 +21,88 @@ Because the mobility data are not publicly available without permission, we prov
 
 ### R scripts
 
-- `net_model.R`  
+- `code/net_model.R`  
   Networked metapopulation SEIR model.
+  - The script is organized with RStudio section headers, which can be navigated using the document outline (`Shift+Command+O` on macOS; `Ctrl+Shift+O` on Windows/Linux).
+  - Major sections include data used, SEIR model settings, and the SEIR model.
+  - The script simulates measles incidence at the finest modeled resolution, i.e., the subpopulation level, and generates outputs underlying results such as Fig. 4a–d in the paper.
+  - The default model configuration and available model options are summarized below.
 
-- `plot.R`  
+- `code/plot.R`  
   Result visualization based on outputs from `net_model.R`.
 
 ### Data files
 
-- `met.csv`  
+- `data/met.csv`  
   Climate data indexed by day of the year.
 
-- `census.csv`  
+- `data/census.csv`  
   Census data, including:
   - `pop_tot_yrend_statgov`: total population size at the end of the year
   - `brrt_tot_yrmidadj_statgov`: birth rate based on total population size at the middle of the year
   - `dert_tot_yrmidadj_statgov`: death rate based on total population size at the middle of the year
 
-- `vacrt_eff.csv`  
+- `data/vacrt_eff.csv`  
   Immunization rate.
 
-- `smry_mig_pair.csv`  
+- `data/smry_mig_pair.csv`  
   Host PLAD–origin PLAD pairs:
   - `resid_curr`: host PLAD
   - `resid_regis`: origin PLAD
 
-- `mig_distri.csv`  
+- `data/mig_distri.csv`  
   Population size of the migrant worker subpopulation.
 
-- `prov_code.csv`  
+- `data/prov_code.csv`  
   PLAD code.
 
-- `pop_trav.csv`  
+- `data/pop_trav.csv`  
   Annual traveler volume.
 
-- `flow_trav_synthetic.rds`  
-  Noise-added 2005–2006 traveler mobility data.
+- `data/flow_trav_synthetic.rds`  
+  Noise-added 2005–2006 traveler mobility data used for the workflow.
 
-- `Sprop_init.csv`  
+- `data/Sprop_init.csv`  
   Initial population susceptibility obtained from the population model.
 
-- `rprt_bd.csv`  
-  Bounds for report rate.
+- `data/rprt_bd.csv`  
+  Bounds for reporting rate.
 
-- `Sprop_SIA.csv`  
+- `data/Sprop_SIA.csv`  
   Population susceptibility prior to the nationwide SIA obtained from the population model.
 
-- `census_agestr.csv`  
+- `data/census_agestr.csv`  
   Age structure for the local population.
 
-- `mig_agestr.csv`  
+- `data/mig_agestr.csv`  
   Age structure for the migrant worker population.
 
-- `pop_trav_out_night.csv`  
+- `data/pop_trav_out_night.csv`  
   `vol_trav_out_night`: total number of days travelers from one PLAD spend in other PLADs.  
   This metric is used to estimate the proportion of travelers by origin. For example, in 2004:
   - Beijing: 8,946,921
   - Tianjin: 3,350,088  
   Among travelers between Beijing and Tianjin, the estimated proportion originating from Beijing is:
-  `8946921 / (8946921 + 3350088)`  
+  `8946921 / (8946921 + 3350088)`
   and similarly for the reverse direction.
 
-- `inc_init.csv`  
-  Initial number of infectious and exposed individuals.
+- `data/inc_init.csv`  
+  Initial numbers of infectious and exposed individuals.
 
 ---
 
-## Model configuration
+## Running the workflow
+
+This workflow is intended to demonstrate the model structure and reproducibility using shareable data.
+1. Clone or download the repository and open it in RStudio.
+2. Open `code/net_model.R` and review the RStudio section headers.
+3. Check the default model configuration described below.
+4. Run `code/net_model.R` to generate model simulations.
+5. Run `code/plot.R` to visualize the saved outputs from `code/net_model.R`.
+
+---
+
+## Default model configuration
 
 The paper’s model configuration corresponds to:
 
@@ -90,7 +113,7 @@ The paper’s model configuration corresponds to:
   Absolute humidity and temperature–forced model embedded within the metapopulation model.
 
 - School term-time forcing off  
-  Set lower and upper bounds of `A_sch` in `bd_param_init` to `0`.
+  Set the lower and upper bounds of `A_sch` in `bd_param_init` to `0`.
 
 - `res_t_seq = "month"`  
   Monthly temporal resolution.
@@ -106,25 +129,21 @@ The number of model realizations can be adjusted via `J`.
 
 ### `net_mode`
 
-- `"trav_mig_net"`: metapopulation model connected via both traveler and migrant worker networks  
-- `"mig_net"`: metapopulation model connected via migrant worker network  
-- `"trav_net"`: metapopulation model connected via traveler network  
+- `"trav_mig_net"`: metapopulation model connected via both traveler and migrant worker networks
+- `"mig_net"`: metapopulation model connected via migrant worker network
+- `"trav_net"`: metapopulation model connected via traveler network
 - `"iso_net"`: metapopulation model without mobility network
 
 ### `clim_model`
 
-- `"aht"`: absolute humidity and temperature forcing embedded within the metapopulation model  
+- `"aht"`: absolute humidity and temperature forcing embedded within the metapopulation model
 - `"sin"`: sinusoidal climate forcing embedded within the metapopulation model
 
 ### `res_t_seq`
 
-- `"month"`: monthly simulation  
+- `"month"`: monthly simulation
 - `"wk"`: weekly simulation
 
 ### Turning on school term-time forcing
 
 Set the lower and upper bounds for `A_sch` in `bd_param_init` to values as needed.
-
-
-
-
